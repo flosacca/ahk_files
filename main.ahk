@@ -48,10 +48,11 @@ LWinStateTimer:
 
 
 #e::run D:/DL
+
 #CapsLock::run D:/dev/debug
 
 
-^!h::run cmd, % CurrentPathOr(dl), Max
+^!h::run cmd /c bash -lc m,, Max
 
 ^!j::
   path := CurrentPathOr(home)
@@ -66,9 +67,13 @@ LWinStateTimer:
     run cmd /c bash ~,, Max
   return
 
+^!;::run cmd, % CurrentPathOr(dl), Max
+
 
 ^!u::run cmd /c bash -lc "python3 -q", % CurrentPathOr(dl), Max
+
 ^!i::run cmd /c bash -lc irb, % CurrentPathOr(dl), Max
+
 ^!o::run gvim ., % CurrentPathOr(dl)
 
 
@@ -81,18 +86,28 @@ LWinStateTimer:
 
 ^!n::NewTempFile("txt")
 
-^!m::run https:
+; Open default browser
+^!m::run http:
+
 ^!,::run https://learn.tsinghua.edu.cn/
 
 ^!v::run gvim ~/.vimrc
 
 
+; Poweroff
 ^!+p::shutdown 8
+
+; Reboot
 ^!+r::shutdown 2
 
-^!+m::run D:/App/bin/monitor.exe
+; Restart explorer
+^!+e::run cmd /c taskkill /f /im explorer.exe && start explorer,, Hide
 
-^!e::run cmd /c taskkill /f /im explorer.exe && start explorer,, Hide
+; Hibernate
+^!+h::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
+
+; Close monitor
+^!+m::run D:/App/bin/monitor.exe
 
 
 #include D:/App/AHK/IME.ahk
