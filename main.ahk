@@ -7,8 +7,8 @@ Init:
   home := ReplaceSlash(home)
   dl := "D:/DL"
 
+  EnvSet WSLENV, NOTMUX/u:NOBLINK/u
   EnvSet NOBLINK, 1
-  EnvSet WSLENV, NOBLINK/u
 
   gui -MinimizeBox
   gui Font, s12
@@ -18,18 +18,22 @@ Init:
 
 ButtonOK:
   gui Submit
-  if (ext)
-    NewTempFile(ext)
+  if (ext) {
+    if (ext == ".")
+      run gvim ., % CurrentPathOr(dl)
+    else
+      NewTempFile(ext)
+  }
   return
 
+
+^+CapsLock::run taskmgr
+
+^CapsLock::^Space
 
 CapsLock::Esc
 Esc::CapsLock
 
-^+CapsLock::run taskmgr
-
-
-^CapsLock::^Space
 
 ~<#Space::
   SetTimer LWinStateTimer, 50
@@ -47,51 +51,85 @@ LWinStateTimer:
   return
 
 
-#e::run D:/DL
+#F11::
+  SoundSet, -2
+  gosub ShowVolume
+  return
 
-#CapsLock::run D:/dev/debug
+#F12::
+  SoundSet, +2
+  gosub ShowVolume
+  return
+
+ShowVolume:
+  SoundGet volume
+  volume := round(volume)
+  progress %volume%, %volume%
+  SetTimer ProgressOff, -2000
+  return
+
+ProgressOff:
+  progress Off
+  return
 
 
-^!h::run cmd /c bash -lc m,, Max
+; #e::run D:/DL
+#e::return
+
+#CapsLock::run D:/DL
+
+
+^!h::WSLRun("-c mosh-default", "")
 
 ^!j::
-  path := CurrentPathOr(home)
-  run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
+  path := CurrentPath()
+  if (path)
+    WSLRun("", path)
+  else
+    WSLRun("-C ~")
+  return
+
+^!,::
+  EnvSet NOTMUX, 1
+  WSLRun("-C ~")
+  EnvSet NOTMUX
   return
 
 ^!l::
-  path := CurrentPath()
-  if (path)
-    run cmd /c bash, % path, Max
-  else
-    run cmd /c bash ~,, Max
+  path := CurrentPathOr(home)
+  run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
+  return
+
+^!.::
+  path := CurrentPathOr(home)
+  run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
   return
 
 ^!;::run cmd, % CurrentPathOr(dl), Max
 
 
-^!u::run cmd /c bash -lc "python3 -q", % CurrentPathOr(dl), Max
+^!u::WSLRun("-c ""python3 -q""", CurrentPathOr(dl))
 
-^!i::run cmd /c bash -lc irb, % CurrentPathOr(dl), Max
+^!i::WSLRun("-c irb", CurrentPathOr(dl))
 
-^!o::run gvim ., % CurrentPathOr(dl)
-
-
-^!y::run mspaint
-
-^!p::
+; ^!o::run gvim ., % CurrentPathOr(dl)
+^!o::
   GuiControl,, ext
   gui Show
   return
 
-^!n::NewTempFile("txt")
+^!p::NewTempFile("txt")
+
+
+^!y::run mspaint
 
 ; Open default browser
-^!m::run http:
+^!n::run http:
 
-^!,::run https://learn.tsinghua.edu.cn/
+^!m::run https://learn.tsinghua.edu.cn/
 
-^!v::run gvim ~/.vimrc
+; ^!v::run gvim ~/.vimrc
+^!v::WSLRun("-c ""vim ~/.vimrc""")
 
 
 ; Poweroff
@@ -111,6 +149,11 @@ LWinStateTimer:
 
 
 #include D:/App/AHK/IME.ahk
+
+WSLRun(cmd, dir := "") {
+  ; run % "cmd /c bash " cmd, % dir, Max
+  run % "D:/opt/wsl-terminal/open-wsl.exe " cmd, % dir
+}
 
 SmartOr(a, b) {
   return a ? a : b
@@ -145,8 +188,8 @@ CurrentPath() {
     return ""
 
   WinGetClass class, A
-  if (class ~= "Progman|WorkerW")
-    return ReplaceSlash(A_Desktop)
+  ; if (class ~= "Progman|WorkerW")
+  ;   return ReplaceSlash(A_Desktop)
 
   if (class ~= "(Cabinet|Explore)WClass") {
     WinGet hwnd, ID, A
