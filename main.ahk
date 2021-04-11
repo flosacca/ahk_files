@@ -3,11 +3,11 @@
 #NoEnv
 
 Init:
-  EnvGet home, HOME
-  home := ReplaceSlash(home)
+  EnvGet msys_home, HOME
+  msys_home := ReplaceSlash(msys_home)
   dl := "D:/DL"
 
-  EnvSet WSLENV, NOTMUX/u:NOBLINK/u
+  EnvSet WSLENV, NOTMUX:NOBLINK
   EnvSet NOBLINK, 1
 
   gui -MinimizeBox
@@ -19,7 +19,9 @@ Init:
 ButtonOK:
   gui Submit
   if (ext) {
-    if (ext == ".")
+    if (ext ~= "^\d+$")
+      WSLRun("-c ""s " ext """", "")
+    else if (ext == ".")
       run gvim ., % CurrentPathOr(dl)
     else
       NewTempFile(ext)
@@ -79,7 +81,7 @@ ProgressOff:
 #CapsLock::run D:/DL
 
 
-^!h::WSLRun("-c mosh-default", "")
+^!h::WSLRun("-c ""s 2 tmux a""", "")
 
 ^!j::
   path := CurrentPath()
@@ -96,12 +98,12 @@ ProgressOff:
   return
 
 ^!l::
-  path := CurrentPathOr(home)
+  path := CurrentPathOr(msys_home)
   run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
   return
 
 ^!.::
-  path := CurrentPathOr(home)
+  path := CurrentPathOr(msys_home)
   run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
   return
 
@@ -112,7 +114,6 @@ ProgressOff:
 
 ^!i::WSLRun("-c irb", CurrentPathOr(dl))
 
-; ^!o::run gvim ., % CurrentPathOr(dl)
 ^!o::
   GuiControl,, ext
   gui Show
@@ -126,7 +127,7 @@ ProgressOff:
 ; Open default browser
 ^!n::run http:
 
-^!m::run https://learn.tsinghua.edu.cn/
+^!m::run https://learn.tsinghua.edu.cn/f/wlxt/index/course/student/
 
 ; ^!v::run gvim ~/.vimrc
 ^!v::WSLRun("-c ""vim ~/.vimrc""")
@@ -174,11 +175,9 @@ NewTempFile(ext, exe := "gvim") {
 }
 
 ReplaceSlash(s) {
-  if ! s {
-    MsgBox Empty String
-    ExitApp
+  if s {
+    StringReplace s, s, \, /, All
   }
-  StringReplace s, s, \, /, All
   return s
 }
 
