@@ -83,17 +83,11 @@ ProgressOff:
 
 ^!h::WSLRun("-c ""s 2 tmux a""", "")
 
-^!j::
-  path := CurrentPath()
-  if (path)
-    WSLRun("", path)
-  else
-    WSLRun("-C ~")
-  return
+^!j::WSLRun("", CurrentPath())
 
 ^!,::
   EnvSet NOTMUX, 1
-  WSLRun("-C ~")
+  WSLRun("", CurrentPath())
   EnvSet NOTMUX
   return
 
@@ -153,7 +147,10 @@ ProgressOff:
 
 WSLRun(cmd, dir := "") {
   ; run % "cmd /c bash " cmd, % dir, Max
-  run % "D:/opt/wsl-terminal/open-wsl.exe " cmd, % dir
+  if (dir)
+    run % "D:/opt/wsl-terminal/open-wsl.exe " cmd, % dir
+  else
+    run % "D:/opt/wsl-terminal/open-wsl.exe -C ~ " cmd
 }
 
 SmartOr(a, b) {
