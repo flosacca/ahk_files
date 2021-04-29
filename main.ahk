@@ -29,12 +29,28 @@ ButtonOK:
   return
 
 
-^+CapsLock::run taskmgr
+/*
+There are some special keys in Japanese keyboard:
 
-^CapsLock::^Space
+| Key               | Scan code |
+| ----------------- | --------- |
+| 英数 (CapsLock)   | sc03A     |
+| 半角/全角         | sc029     |
+| ひらがな/カタカナ | sc070     |
+| 変換              | sc079     |
+| 無変換            | sc07B     |
 
-CapsLock::Esc
-Esc::CapsLock
+The CapsLock key is replaced with 英数 key and Shift+英数 gives CapsLock.
+
+Mapping sc03A works as mapping CapsLock and sometimes works more proper.
+
+See also https://www.autohotkey.com/docs/KeyList.htm#SpecialKeys
+*/
+
+sc03A::Esc
+Esc::sc03A
+
+^sc03A::ToggleIME()
 
 
 ~<#Space::
@@ -45,10 +61,7 @@ LWinStateTimer:
   if ! GetKeyState("LWin") {
     SetTimer,, Off
     sleep 50
-    if (~IME_GetConvMode() & 1)
-      send ^{Space}
-    else if (IME_GetConvMode() & 8)
-      send ^{CapsLock}
+    ToggleIME("on")
   }
   return
 
@@ -199,4 +212,41 @@ CurrentPath() {
 
 CurrentPathOr(defaultPath) {
   return SmartOr(CurrentPath(), defaultPath)
+}
+
+/*
+| Virtual key | Effect under Japanese IME                 | Remarks  |
+| ----------- | ----------------------------------------- | -------- |
+| vkF0        | Toggle between english and last kana mode | 英数     |
+| vkF1        | Switch to katakana mode                   | カタカナ |
+| vkF2        | Switch to hiragana mode                   | ひらがな |
+| vkF3        | Toggle between english and hiragana mode  | 半角     |
+| vkF4        | Same as vkF3                              | 全角     |
+*/
+ToggleIME(action := "toggle") {
+  /*
+  | Lang | IME  | Mode     | Bits set     |
+  | ---- | ---- | -------- | ------------ |
+  | EN   | -    | -        | 0            |
+  | ZH   | MS   | EN       | none         |
+  | ZH   | MS   | ZH       | 0, 10        |
+  | JP   | MS   | hiragana | 0, 3         |
+  | JP   | MS   | katakana | 0, 3, 1      |
+  | JP   | MS   | initial  | 0, 3, 4      |
+  | JP   | MS   | EN       | none or prev |
+  */
+  mode := IME_GetConvMode()
+
+  if (action == "toggle") {
+    if (mode & 8)
+      send {vkF0}
+    else if (mode != 1)
+      send ^{Space}
+  }
+  else if (action == "on") {
+    if (mode & 8)
+      send {vkF2}
+    else if (mode == 0)
+      send ^{Space}
+  }
 }
