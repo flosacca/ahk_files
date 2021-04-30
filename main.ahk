@@ -43,6 +43,7 @@ There are some special keys in Japanese keyboard:
 The CapsLock key is replaced with 英数 key and Shift+英数 gives CapsLock.
 
 Mapping sc03A works as mapping CapsLock and sometimes works more proper.
+All mappings using CapsLock will not work when any mapping of sc03A exists.
 
 See also https://www.autohotkey.com/docs/KeyList.htm#SpecialKeys
 */
@@ -51,6 +52,9 @@ sc03A::Esc
 Esc::sc03A
 
 ^sc03A::ToggleIME()
+
+#sc03A::run D:/DL
+#e::return
 
 
 ~<#Space::
@@ -86,12 +90,6 @@ ShowVolume:
 ProgressOff:
   progress Off
   return
-
-
-; #e::run D:/DL
-#e::return
-
-#CapsLock::run D:/DL
 
 
 ^!h::WSLRun("-c ""s 2 tmux a""", "")
