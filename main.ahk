@@ -70,26 +70,14 @@ LWinStateTimer:
   return
 
 
-#F11::
-  SoundSet, -2
-  gosub ShowVolume
-  return
+; Volumn_Mute
+#F10::send {vkAD}
 
-#F12::
-  SoundSet, +2
-  gosub ShowVolume
-  return
+; Volumn_Down
+#F11::send {vkAE}
 
-ShowVolume:
-  SoundGet volume
-  volume := round(volume)
-  progress %volume%, %volume%
-  SetTimer ProgressOff, -2000
-  return
-
-ProgressOff:
-  progress Off
-  return
+; Volumn_Up
+#F12::send {vkAF}
 
 
 ^!h::WSLRun("-c ""s 2 tmux a""", "")
