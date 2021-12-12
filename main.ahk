@@ -5,9 +5,9 @@
 Init:
   EnvGet msys_home, HOME
   msys_home := ReplaceSlash(msys_home)
-  dl := "D:/DL"
+  home := "D:/root"
 
-  EnvSet WSLENV, NOTMUX:NOBLINK
+  EnvSet WSLENV, LOAD_TMUX:NOBLINK
   EnvSet NOBLINK, 1
 
   gui -MinimizeBox
@@ -22,7 +22,7 @@ ButtonOK:
     if (ext ~= "^\d+$")
       WSLRun("-c ""s " ext """", "")
     else if (ext == ".")
-      run gvim ., % CurrentPathOr(dl)
+      run gvim ., % CurrentPathOr(home)
     else
       NewTempFile(ext)
   }
@@ -53,7 +53,7 @@ Esc::sc03A
 
 ^sc03A::ToggleIME()
 
-#sc03A::run D:/DL
+#sc03A::run % home
 #e::return
 
 
@@ -80,32 +80,30 @@ LWinStateTimer:
 #F12::send {vkAF}
 
 
-^!h::WSLRun("-c ""s 2 tmux a""", "")
+^!h::WSLRun("", CurrentPath())
 
-^!j::WSLRun("", CurrentPath())
-
-^!,::
-  EnvSet NOTMUX, 1
+^!j::
+  EnvSet LOAD_TMUX, 1
   WSLRun("", CurrentPath())
-  EnvSet NOTMUX
+  EnvSet LOAD_TMUX
   return
 
 ^!l::
   path := CurrentPathOr(msys_home)
-  run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
+  run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
   return
 
 ^!.::
   path := CurrentPathOr(msys_home)
-  run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
+  run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
   return
 
-^!;::run cmd, % CurrentPathOr(dl), Max
+^!;::run cmd, % CurrentPathOr(home), Max
 
 
-^!u::WSLRun("-c ""python3 -q""", CurrentPathOr(dl))
+^!u::WSLRun("-c ""python3 -q""", CurrentPathOr(home))
 
-^!i::WSLRun("-c irb", CurrentPathOr(dl))
+^!i::WSLRun("-c irb", CurrentPathOr(home))
 
 ^!o::
   GuiControl,, ext
@@ -122,7 +120,6 @@ LWinStateTimer:
 
 ^!m::run https://learn.tsinghua.edu.cn/f/wlxt/index/course/student/
 
-; ^!v::run gvim ~/.vimrc
 ^!v::WSLRun("-c ""vim ~/.vimrc""")
 
 
@@ -139,7 +136,7 @@ LWinStateTimer:
 ^!+h::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 
 ; Close monitor
-^!+m::run D:/App/bin/monitor.exe
+^!+m::SendMessage, 0x112, 0xF170, 2,, Program Manager
 
 
 #include D:/App/AHK/IME.ahk
