@@ -6,25 +6,30 @@ Init:
   EnvGet msys_home, HOME
   msys_home := ReplaceSlash(msys_home)
   home := "D:/root"
+  wsltty := "D:/opt/wsltty/bin/mintty.exe"
 
   EnvSet WSLENV, LOAD_TMUX:NOBLINK
   EnvSet NOBLINK, 1
 
   gui -MinimizeBox
   gui Font, s12
-  gui Add, Edit, vExt
+  gui Add, Edit, vId
   gui Add, Button, Default ym, OK
   return
 
+
 ButtonOK:
   gui Submit
-  if (ext) {
-    if (ext ~= "^\d+$")
-      WSLRun("-c ""s " ext """", "")
-    else if (ext == ".")
+  if (id) {
+    if (id ~= "^\d+$") {
+      args := GetProfile(id)
+      if (args != "ERROR")
+        run % wsltty " -~ " args
+    }
+    else if (id == ".")
       run gvim ., % CurrentPathOr(home)
     else
-      NewTempFile(ext)
+      NewTempFile(id)
   }
   return
 
@@ -62,7 +67,7 @@ Esc::sc03A
   return
 
 LWinStateTimer:
-  if ! GetKeyState("LWin") {
+  if !GetKeyState("LWin") {
     SetTimer,, Off
     sleep 50
     ToggleIME("on")
@@ -80,11 +85,11 @@ LWinStateTimer:
 #F12::send {vkAF}
 
 
-^!h::WSLRun("", CurrentPath())
+^!h::OpenWSL(CurrentPath())
 
 ^!j::
   EnvSet LOAD_TMUX, 1
-  WSLRun("", CurrentPath())
+  OpenWSL(CurrentPath())
   EnvSet LOAD_TMUX
   return
 
@@ -98,15 +103,15 @@ LWinStateTimer:
   run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
   return
 
-^!;::run cmd, % CurrentPathOr(home), Max
+^!;::run cmd /k cls, % CurrentPathOr(home), Max
 
 
-^!u::WSLRun("-c ""python3 -q""", CurrentPathOr(home))
+^!u::OpenWSL(CurrentPathOr(home), "bash -lc python3 -q")
 
-^!i::WSLRun("-c irb", CurrentPathOr(home))
+^!i::OpenWSL(CurrentPathOr(home), "bash -lc irb")
 
 ^!o::
-  GuiControl,, ext
+  GuiControl,, id
   gui Show
   return
 
@@ -120,17 +125,21 @@ LWinStateTimer:
 
 ^!m::run https://learn.tsinghua.edu.cn/f/wlxt/index/course/student/
 
-^!v::WSLRun("-c ""vim ~/.vimrc""")
+^!v::OpenWSL("", "vim .vimrc")
 
 
 ; Poweroff
 ^!+p::shutdown 8
 
 ; Reboot
-^!+r::shutdown 2
+^!+[::shutdown 2
 
 ; Restart explorer
-^!+e::run cmd /c taskkill /f /im explorer.exe && start explorer,, Hide
+^!+e::
+  run taskkill /f /im explorer.exe,, Hide
+  sleep 500
+  run explorer
+  return
 
 ; Hibernate
 ^!+h::DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
@@ -141,12 +150,19 @@ LWinStateTimer:
 
 #include D:/App/AHK/IME.ahk
 
-WSLRun(cmd, dir := "") {
-  ; run % "cmd /c bash " cmd, % dir, Max
+OpenWSL(dir := "", prog := "-", dist := "") {
+  global wsltty
+  base := wsltty " --WSL=" dist
   if (dir)
-    run % "D:/opt/wsl-terminal/open-wsl.exe " cmd, % dir
+    base .= " --dir=" dir
   else
-    run % "D:/opt/wsl-terminal/open-wsl.exe -C ~ " cmd
+    base .= " -~"
+  run % base " " prog
+}
+
+GetProfile(id) {
+  IniRead args, D:/etc/wsltty.ini, profile, %id%
+  return args
 }
 
 SmartOr(a, b) {
@@ -168,7 +184,7 @@ NewTempFile(ext, exe := "gvim") {
 }
 
 ReplaceSlash(s) {
-  if s {
+  if (s) {
     StringReplace s, s, \, /, All
   }
   return s
