@@ -85,6 +85,14 @@ LWinStateTimer:
 #F12::send {vkAF}
 
 
+$^d::
+  if (CurrentProcessName() == "chrome.exe")
+    send ^f
+  else
+    send ^d
+  return
+
+
 ^!h::OpenWSL(CurrentPath())
 
 ^!j::
@@ -154,7 +162,7 @@ OpenWSL(dir := "", prog := "-", dist := "") {
   global wsltty
   base := wsltty " --WSL=" dist
   if (dir)
-    base .= " --dir=" dir
+    base .= " --dir=""" dir """"
   else
     base .= " -~"
   run % base " " prog
@@ -190,9 +198,13 @@ ReplaceSlash(s) {
   return s
 }
 
-CurrentPath() {
+CurrentProcessName() {
   WinGet name, ProcessName, A
-  if (name != "explorer.exe")
+  return name
+}
+
+CurrentPath() {
+  if (CurrentProcessName() != "explorer.exe")
     return ""
 
   WinGetClass class, A
