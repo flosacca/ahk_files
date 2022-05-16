@@ -6,7 +6,6 @@ Init:
   EnvGet msys_home, HOME
   msys_home := ReplaceSlash(msys_home)
   home := "D:/root"
-  wsltty := "D:/opt/wsltty/bin/mintty.exe"
 
   EnvSet WSLENV, LOAD_TMUX:NOBLINK
   EnvSet NOBLINK, 1
@@ -24,7 +23,7 @@ ButtonOK:
     if (id ~= "^\d+$") {
       args := GetProfile(id)
       if (args != "ERROR")
-        run % wsltty " -~ " args
+        OpenWSL("", args)
     }
     else if (id == ".")
       run gvim ., % CurrentPathOr(home)
@@ -158,13 +157,14 @@ $^d::
 
 #include D:/App/AHK/IME.ahk
 
-OpenWSL(dir := "", prog := "-", dist := "") {
-  global wsltty
-  base := wsltty " --WSL=" dist
+OpenWSL(dir := "", prog := "bash -l", dist := "") {
+  base := "D:/opt/wsltty/bin/mintty.exe --WSLmode -e /bin/wslbridge2"
   if (dir)
-    base .= " --dir=""" dir """"
+    base .= " -w """ dir """"
   else
-    base .= " -~"
+    base .= " -W ""~"""
+  if (dist)
+    base .= " -d " dist
   run % base " " prog
 }
 
