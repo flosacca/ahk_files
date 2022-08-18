@@ -113,7 +113,7 @@ $^d::
 ^!;::run cmd /k cls, % CurrentPathOr(home), Max
 
 
-^!u::OpenWSL(CurrentPathOr(home), "bash -lc python3 -q")
+^!u::OpenWSL(CurrentPathOr(home), "bash -lc ""python3 -q""")
 
 ^!i::OpenWSL(CurrentPathOr(home), "bash -lc irb")
 
@@ -132,7 +132,7 @@ $^d::
 
 ^!m::run https://learn.tsinghua.edu.cn/f/wlxt/index/course/student/
 
-^!v::OpenWSL("", "vim .vimrc")
+^!v::OpenWSL("", "bash -lc ""vim .vimrc""")
 
 
 ; Poweroff
@@ -159,13 +159,12 @@ $^d::
 
 OpenWSL(dir := "", prog := "bash -l", dist := "") {
   base := "D:/opt/wsltty/bin/mintty.exe --WSLmode -e /bin/wslbridge2"
-  if (dir)
-    base .= " -w """ dir """"
-  else
-    base .= " -W ""~"""
   if (dist)
     base .= " -d " dist
-  run % base " " prog
+  if (dir)
+    run % base " " prog, % dir
+  else
+    run % base " -W ""~"" " prog
 }
 
 GetProfile(id) {

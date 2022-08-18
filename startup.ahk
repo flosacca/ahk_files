@@ -7,7 +7,7 @@ loop Files, D:/etc/startup.d/*
 RunLine(line) {
   c := []
   loop Parse, line, CSV
-    c.push(A_LoopField)
+    c.push(RegExReplace(A_LoopField, "^ *"))
 
   if (c[1] ~= "^(#|$)")
     return
