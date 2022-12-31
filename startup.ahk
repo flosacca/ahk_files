@@ -12,11 +12,11 @@ RunLine(line) {
   if (c[1] ~= "^(#|$)")
     return
 
-  try {
-    run % c[1], % c[2], % c[3]
-  }
-
   d := c[4] ? c[4] : 100
   if (d > 0)
     sleep d
+
+  try {
+    run % c[1], % c[2], % c[3]
+  }
 }

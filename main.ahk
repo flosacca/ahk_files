@@ -7,9 +7,6 @@ Init:
   msys_home := ReplaceSlash(msys_home)
   home := "D:/root"
 
-  EnvSet WSLENV, LOAD_TMUX:NOBLINK
-  EnvSet NOBLINK, 1
-
   gui -MinimizeBox
   gui Font, s12
   gui Add, Edit, vId
@@ -92,13 +89,9 @@ $^d::
   return
 
 
-^!h::OpenWSL(CurrentPath())
+^!h::OpenWSL(CurrentPath(), "zsh -l")
 
-^!j::
-  EnvSet LOAD_TMUX, 1
-  OpenWSL(CurrentPath())
-  EnvSet LOAD_TMUX
-  return
+^!j::OpenWSL(CurrentPath(), "tmux")
 
 ^!l::
   path := CurrentPathOr(msys_home)
@@ -129,8 +122,6 @@ $^d::
 
 ; Open default browser
 ^!n::run http:
-
-^!m::run https://learn.tsinghua.edu.cn/f/wlxt/index/course/student/
 
 ^!v::OpenWSL("", "bash -lc ""vim .vimrc""")
 
@@ -213,8 +204,10 @@ CurrentPath() {
   if (class ~= "(Cabinet|Explore)WClass") {
     WinGet hwnd, ID, A
     for w in ComObjCreate("Shell.Application").windows
-      if (w.hwnd == hwnd)
-        return ReplaceSlash(w.document.folder.self.path)
+      if (w.hwnd == hwnd) {
+        path := ReplaceSlash(w.document.folder.self.path)
+        return path ~= "^:" ? "" : path
+      }
   }
 
   return ""
