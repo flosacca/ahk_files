@@ -4,8 +4,7 @@
 
 Init:
   EnvGet msys_home, HOME
-  msys_home := ReplaceSlash(msys_home)
-  home := "D:/root"
+  home := "D:\root"
 
   gui -MinimizeBox
   gui Font, s12
@@ -95,12 +94,12 @@ $^d::
 
 ^!l::
   path := CurrentPathOr(msys_home)
-  run C:/msys64/msys2_shell.cmd -mingw64 -where ., % path, Hide
+  run C:\msys64\msys2_shell.cmd -mingw64 -where ., % path, Hide
   return
 
 ^!.::
   path := CurrentPathOr(msys_home)
-  run C:/msys64/msys2_shell.cmd -mingw32 -where ., % path, Hide
+  run C:\msys64\msys2_shell.cmd -mingw32 -where ., % path, Hide
   return
 
 ^!;::run cmd /k cls, % CurrentPathOr(home), Max
@@ -146,10 +145,10 @@ $^d::
 ^!+m::SendMessage, 0x112, 0xF170, 2,, Program Manager
 
 
-#include D:/App/AHK/IME.ahk
+#include D:\App\AHK\IME.ahk
 
 OpenWSL(dir := "", prog := "bash -l", dist := "") {
-  base := "D:/opt/wsltty/bin/mintty.exe --WSLmode -e /bin/wslbridge2"
+  base := "D:\opt\wsltty\bin\mintty.exe --WSLmode -e /bin/wslbridge2"
   if (dist)
     base .= " -d " dist
   if (dir)
@@ -159,7 +158,7 @@ OpenWSL(dir := "", prog := "bash -l", dist := "") {
 }
 
 GetProfile(id) {
-  IniRead args, D:/etc/wsltty.ini, profile, %id%
+  IniRead args, D:\etc\wsltty.ini, profile, %id%
   return args
 }
 
@@ -181,13 +180,6 @@ NewTempFile(ext, exe := "gvim") {
   run % exe " " s
 }
 
-ReplaceSlash(s) {
-  if (s) {
-    StringReplace s, s, \, /, All
-  }
-  return s
-}
-
 CurrentProcessName() {
   WinGet name, ProcessName, A
   return name
@@ -199,13 +191,13 @@ CurrentPath() {
 
   WinGetClass class, A
   ; if (class ~= "Progman|WorkerW")
-  ;   return ReplaceSlash(A_Desktop)
+  ;   return A_Desktop
 
   if (class ~= "(Cabinet|Explore)WClass") {
     WinGet hwnd, ID, A
     for w in ComObjCreate("Shell.Application").windows
       if (w.hwnd == hwnd) {
-        path := ReplaceSlash(w.document.folder.self.path)
+        path := w.document.folder.self.path
         return path ~= "^:" ? "" : path
       }
   }
