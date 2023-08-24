@@ -68,6 +68,10 @@ F1::
 #F12::send {vkAF}
 
 
+#Tab::run %A_ScriptDir%\color.ahk
+#`::send #{Tab}
+
+
 #IfWinActive ahk_exe chrome.exe
 ^d::send ^f
 #IfWinActive
