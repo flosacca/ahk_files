@@ -2,30 +2,43 @@
 #SingleInstance Force
 
 
+; The top section doesn't have to have a label.
+; The label here is to avoid forgetting the "return".
 Init:
   EnvGet msys_home, HOME
   home := "D:\root"
 
-  gui -MinimizeBox
+  gui OpenBox:New, -MinimizeBox, Open
   gui Font, s12, Verdana
-  gui Add, Edit, vId
-  gui Add, Button, hp x+8 Default, OK
+  gui Add, Edit, vEditOpen
+  gui Add, Button, hp x+8 gOpenSubmit Default, OK
+
+  gui ColorBox:New, -MaximizeBox, Color
+  gui Font, s14, Consolas
+  gui Add, Text, vHidden Hidden
+  gui Add, Edit, xp vEditHex ReadOnly, % format("{:7}", "")
+  gui Add, Edit, x+8 vEditRgb ReadOnly, % format("{:16}", "")
   return
 
 
-ButtonOK:
+OpenSubmit:
   gui Submit
-  if (id) {
-    if (id ~= "^\d+$") {
-      args := GetProfile(id)
+  if (EditOpen) {
+    if (EditOpen ~= "^\d+$") {
+      args := GetProfile(EditOpen)
       if (args != "ERROR")
         OpenWSL("", args)
     }
-    else if (id == ".")
+    else if (EditOpen == ".")
       run gvim ., % CurrentPathOr(home)
     else
-      NewTempFile(id)
+      NewTempFile(EditOpen)
   }
+  return
+
+OpenBoxGuiEscape:
+ColorBoxGuiEscape:
+  gui Cancel
   return
 
 
@@ -68,7 +81,7 @@ F1::
 #F12::send {vkAF}
 
 
-#Tab::run %A_ScriptDir%\color.ahk
+#Tab::ShowCursorColor()
 #`::send #{Tab}
 
 
@@ -99,7 +112,8 @@ F1::
 ^!i::OpenWSL(CurrentPathOr(home), "bash -lc irb")
 
 ^!o::
-  GuiControl,, id
+  gui OpenBox:Default
+  GuiControl,, EditOpen
   gui Show
   return
 
@@ -132,6 +146,31 @@ F1::
 
 ; Close monitor
 ^!+m::SendMessage, 0x112, 0xF170, 2,, Program Manager
+
+
+ShowCursorColor() {
+  ; The coordinates are relative to the active window by default.
+  ; It doesn't hurt, as negative coordinates are supported.
+  MouseGetPos x, y
+  PixelGetColor c, x, y, RGB
+
+  r := c >> 16
+  g := c >> 8 & 0xff
+  b := c & 0xff
+  hexStr := format("#{}", SubStr(c, 3))
+  rgbStr := format("rgb({:3},{:3},{:3})", r, g, b)
+
+  gui ColorBox:Default
+  GuiControl,, EditHex, % hexStr
+  GuiControl,, EditRgb, % rgbStr
+  GuiControl Focus, Hidden
+
+  ; There's a strange thing. A GUI takes a moment to be focused after being
+  ; displayed only when the first time launched via #Tab.
+  ; This is a workaround. The second "Show" works as "WinActivate".
+  gui Show, NoActivate
+  gui Show
+}
 
 
 #include %A_ScriptDir%\IME.ahk
