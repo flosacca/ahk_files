@@ -1,6 +1,6 @@
-#NoEnv
+﻿#NoEnv
 
-loop Files, D:/etc/startup.d/*
+loop Files, D:\etc\startup.d\*
   loop Read, %A_LoopFilePath%
     RunLine(A_LoopReadLine)
 

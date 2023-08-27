@@ -1,6 +1,6 @@
+﻿#NoEnv
 #SingleInstance Force
 
-#NoEnv
 
 Init:
   EnvGet msys_home, HOME
