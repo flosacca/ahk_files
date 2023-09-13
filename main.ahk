@@ -7,9 +7,9 @@ Init:
   home := "D:\root"
 
   gui -MinimizeBox
-  gui Font, s12
+  gui Font, s12, Verdana
   gui Add, Edit, vId
-  gui Add, Button, Default ym, OK
+  gui Add, Button, hp x+8 Default, OK
   return
 
 
@@ -80,12 +80,9 @@ LWinStateTimer:
 #F12::send {vkAF}
 
 
-$^d::
-  if (CurrentProcessName() == "chrome.exe")
-    send ^f
-  else
-    send ^d
-  return
+#IfWinActive ahk_exe chrome.exe
+^d::send ^f
+#IfWinActive
 
 
 ^!h::OpenWSL(CurrentPath(), "zsh -l")
@@ -145,7 +142,7 @@ $^d::
 ^!+m::SendMessage, 0x112, 0xF170, 2,, Program Manager
 
 
-#include D:\App\AHK\IME.ahk
+#include %A_ScriptDir%\IME.ahk
 
 OpenWSL(dir := "", prog := "bash -l", dist := "") {
   base := "D:\opt\wsltty\bin\mintty.exe --WSLmode -e /bin/wslbridge2"
@@ -216,7 +213,7 @@ CurrentPathOr(defaultPath) {
 | vkF1        | Switch to katakana mode                   | カタカナ |
 | vkF2        | Switch to hiragana mode                   | ひらがな |
 | vkF3        | Toggle between english and hiragana mode  | 半角     |
-| vkF4        | Same as vkF3                              | 全角     |
+| vkF4        | The same as vkF3                          | 全角     |
 */
 ToggleIME(action := "toggle") {
   /*
