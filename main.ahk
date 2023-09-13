@@ -51,23 +51,11 @@ See also https://www.autohotkey.com/docs/KeyList.htm#SpecialKeys
 sc03A::Esc
 Esc::sc03A
 
+F1::
 ^sc03A::ToggleIME()
 
 #sc03A::run % home
 #e::return
-
-
-~<#Space::
-  SetTimer LWinStateTimer, 50
-  return
-
-LWinStateTimer:
-  if !GetKeyState("LWin") {
-    SetTimer,, Off
-    sleep 50
-    ToggleIME("on")
-  }
-  return
 
 
 ; Volumn_Mute
