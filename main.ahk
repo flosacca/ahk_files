@@ -1,10 +1,14 @@
 ﻿#NoEnv
-#SingleInstance Force
+#SingleInstance Off
 
 
 ; The top section doesn't have to have a label.
 ; The label here is to avoid forgetting the "return".
 Init:
+  ; Note: The hotkeys are installed before the stop section is executed,
+  ; therefore before the previous script instance is closed.
+  ClosePreviousInstance()
+
   EnvGet msys_home, HOME
   home := "D:\root"
 
@@ -272,4 +276,50 @@ ToggleIME(action := "toggle") {
     else if (mode == 0)
       send ^{Space}
   }
+}
+
+ClosePreviousInstance() {
+  title := GetTitle()
+  mark := "[INTERMEDIATE] " title
+  if (!(CloseWindow(mark) || A_IsAdmin)) {
+    SetTitle(mark)
+    runWait % "*RunAs " DllCall("GetCommandLine", "str")
+  }
+  SetTitle("")
+  CloseWindow(title)
+  SetTitle(title)
+}
+
+/*
+AutoHotkey has its own wrapper commands for these Win32 APIs.
+These commands works by *WinTitle Criteria*.
+To make them generally work, `DetectHiddenWindows On` has to be applied,
+even if an HWND is specified by the "ahk_id" criteria.
+*/
+
+FindWindow(title, cls := "") {
+  cls := cls ? cls : "AutoHotkey"
+  return DllCall("FindWindow", "str", "AutoHotkey", "str", title)
+}
+
+CloseWindow(args*) {
+  hwnd := FindWindow(args*)
+  if (!hwnd)
+    return 0
+  ; WM_CLOSE = 0x10
+  DllCall("PostMessage", "ptr", hwnd, "uint", 0x10, "ptr", 0, "ptr", 0)
+  return 1
+}
+
+GetTitle(hwnd := 0) {
+  hwnd := hwnd ? hwnd : A_ScriptHwnd
+  count := DllCall("GetWindowTextLength", "ptr", hwnd) + 1
+  VarSetCapacity(title, count * (A_IsUnicode ? 2 : 1))
+  DllCall("GetWindowText", "ptr", A_ScriptHwnd, "str", title, "int", count)
+  return title
+}
+
+SetTitle(title, hwnd := 0) {
+  hwnd := hwnd ? hwnd : A_ScriptHwnd
+  DllCall("SetWindowText", "ptr", hwnd, "str", title)
 }
